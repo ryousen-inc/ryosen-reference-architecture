@@ -1,0 +1,121 @@
+@prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:   <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:   <http://www.w3.org/2001/XMLSchema#> .
+@prefix sosa:  <http://www.w3.org/ns/sosa/> .
+@prefix ssn:   <http://www.w3.org/ns/ssn/> .
+@prefix prov:  <http://www.w3.org/ns/prov#> .
+@prefix ryosen: <https://ryousen.co.jp/ns/ryosen#> .
+
+#################################################################
+# 稜線オントロジー（Ryosen Core Ontology） v0.2-draft
+#
+# 地方中小企業の熟練者が持つ暗黙知を、W3C SOSA/SSN（観測）と
+# PROV-O（由来）の語彙に接続しながら記述するための中核オントロジー。
+#
+# 理論的背景：知識経営のSECIモデル（野中郁次郎・竹内弘高）を土台に、
+# 暗黙知の「中身」を3つの類型（官能判断型／目利き・見積り型／
+# 関係記憶型）で捉え直した、稜線独自の枠組み。
+#
+# License: Apache License 2.0 (see /LICENSE-CODE)
+# Copyright 2026 株式会社稜線 (Ryosen Inc.)
+#################################################################
+
+<https://ryousen.co.jp/ns/ryosen>
+    a owl:Ontology ;
+    rdfs:label "稜線オントロジー"@ja, "Ryosen Core Ontology"@en ;
+    rdfs:comment "地方中小企業の暗黙知を構造化するための中核オントロジー。SOSA/SSN・PROV-Oを再利用する。"@ja ;
+    owl:versionInfo "0.2-draft" .
+
+#################################################################
+# 暗黙知の3類型（Tacit Knowledge Types）
+#################################################################
+
+ryosen:TacitKnowledgeType
+    a owl:Class ;
+    rdfs:label "暗黙知の類型"@ja ;
+    rdfs:comment "暗黙知を、その中身によって3つに分類する基底クラス。"@ja .
+
+ryosen:SensoryJudgment
+    a owl:Class ;
+    rdfs:subClassOf ryosen:TacitKnowledgeType ;
+    rdfs:label "官能判断型"@ja, "Sensory Judgment"@en ;
+    rdfs:comment "五感による品質判断（香り・泡・色など）。"@ja .
+
+ryosen:AppraisalEstimation
+    a owl:Class ;
+    rdfs:subClassOf ryosen:TacitKnowledgeType ;
+    rdfs:label "目利き・見積り型"@ja, "Appraisal / Estimation"@en ;
+    rdfs:comment "経験的な評価・見積りの根拠となる暗黙知。"@ja .
+
+ryosen:RelationalMemory
+    a owl:Class ;
+    rdfs:subClassOf ryosen:TacitKnowledgeType ;
+    rdfs:label "関係記憶型"@ja, "Relational Memory"@en ;
+    rdfs:comment "人・文脈・関係性についての記憶。"@ja .
+
+#################################################################
+# 熟練者と判断イベント（SOSA/SSN・PROV-Oとの接続）
+#
+# 設計方針：
+#   - 熟練者（Expert）は sosa:Sensor のサブクラスとして扱う
+#     （＝「観測を行う主体」という位置づけ）
+#   - 判断イベント（JudgmentEvent）は sosa:Observation と
+#     prov:Activity の両方を継承する
+#     （＝「何を観測したか」と「どういう由来の行為か」の両面を記述）
+#   - メディア証跡（画像・音声等）はトリプルストアに埋め込まず、
+#     オブジェクトストレージ（MinIO/S3）上のURIとして参照する
+#################################################################
+
+ryosen:Expert
+    a owl:Class ;
+    rdfs:subClassOf sosa:Sensor ;
+    rdfs:label "熟練者"@ja, "Expert" ;
+    rdfs:comment "暗黙知の保持者。SOSA上は観測を行う主体として位置づける。"@ja .
+
+ryosen:JudgmentEvent
+    a owl:Class ;
+    rdfs:subClassOf sosa:Observation, prov:Activity ;
+    rdfs:label "判断イベント"@ja, "Judgment Event" ;
+    rdfs:comment "熟練者による1回の判断行為。観測（何を）と由来（誰が・いつ・何に基づき）の両方を記述する。"@ja .
+
+ryosen:appliesKnowledgeType
+    a owl:ObjectProperty ;
+    rdfs:domain ryosen:JudgmentEvent ;
+    rdfs:range ryosen:TacitKnowledgeType ;
+    rdfs:label "適用する暗黙知の類型"@ja .
+
+ryosen:performedBy
+    a owl:ObjectProperty ;
+    owl:equivalentProperty prov:wasAssociatedWith ;
+    rdfs:domain ryosen:JudgmentEvent ;
+    rdfs:range ryosen:Expert ;
+    rdfs:label "実施した熟練者"@ja .
+
+ryosen:evidenceRef
+    a owl:DatatypeProperty ;
+    rdfs:domain ryosen:JudgmentEvent ;
+    rdfs:range xsd:anyURI ;
+    rdfs:label "証跡への参照URI"@ja ;
+    rdfs:comment "オブジェクトストレージ上のメディア（画像・音声等）を指すURI。トリプルストアには埋め込まない。"@ja .
+
+ryosen:judgmentValue
+    a owl:DatatypeProperty ;
+    rdfs:domain ryosen:JudgmentEvent ;
+    rdfs:label "判断値"@ja ;
+    rdfs:comment "5段階評価などの判断結果。具体的な値域はクライアント個別のプロファイルで定義する。"@ja .
+
+ryosen:note
+    a owl:DatatypeProperty ;
+    rdfs:domain ryosen:JudgmentEvent ;
+    rdfs:range xsd:string ;
+    rdfs:label "メモ"@ja .
+
+#################################################################
+# 拡張ポイント
+#
+# クライアント個別の語彙（例：特定の酒蔵の評価項目、特定の製造業の
+# 見積り根拠項目）は、この稜線オントロジーをインポートしたうえで
+# クライアント固有の名前空間で拡張することを想定する。
+# 稜線オントロジー自体はドメイン非依存の中核部分にとどめる。
+#################################################################
