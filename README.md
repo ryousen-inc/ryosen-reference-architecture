@@ -12,6 +12,7 @@
 |---|---|
 | [`docs/overview.md`](docs/overview.md) | 概要書（設計原則、暗黙知の3類型、記録の四単位、技術構成、判断の三層） |
 | [`ontology/ryosen-core.ttl`](ontology/ryosen-core.ttl) | 稜線オントロジーの正本（名前空間: `https://ryousen.co.jp/ns/ryosen#`） |
+| [`docs/profiles.md`docs/profiles.md] | 実装プロファイル（三構成の適用条件、サーバ規模、保守費用の目安、共通不変条件） |
 | [`reference-impl/`](reference-impl/) | 参照実装コード（準備中） |
 
 ## 設計の前提
