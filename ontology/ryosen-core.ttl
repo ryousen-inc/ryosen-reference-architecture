@@ -25,8 +25,7 @@
     a owl:Ontology ;
     rdfs:label "稜線オントロジー"@ja, "Ryosen Core Ontology"@en ;
     rdfs:comment "地方中小企業の暗黙知を構造化するための中核オントロジー。SOSA/SSN・PROV-Oを再利用する。"@ja ;
-    owl:versionInfo "0.3-draft" ;
-    owl:priorVersion <https://ryousen.co.jp/ns/ryosen/0.2-draft> .
+    owl:versionInfo "0.3-draft" .
 
 #################################################################
 # 暗黙知の3類型（Tacit Knowledge Types）

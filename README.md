@@ -10,7 +10,7 @@
 
 | パス | 内容 |
 |---|---|
-| [`docs/overview.md`](docs/overview.md) | 概要書（設計原則、暗黙知の3類型、記録の五単位、技術構成、場、判断の三層） |
+| [`docs/overview.md`](docs/overview.md) | 概要書（設計原則、暗黙知の3類型、記録の五単位、技術構成、場、三層のガバナンス） |
 | [`docs/method.md`](docs/method.md) | 稜線観測法（問いの更新、何を掘るか、記録する、開く、受け手の設計） |
 | [`ontology/ryosen-core.ttl`](ontology/ryosen-core.ttl) | 稜線オントロジーの正本（名前空間: `https://ryousen.co.jp/ns/ryosen#`） |
 | [`docs/profiles.md`](docs/profiles.md) | 実装プロファイル（三構成の適用条件、サーバ規模、保守費用の目安、共通不変条件） |
