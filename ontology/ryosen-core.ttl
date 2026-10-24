@@ -8,7 +8,7 @@
 @prefix ryosen: <https://ryousen.co.jp/ns/ryosen#> .
 
 #################################################################
-# 稜線オントロジー（Ryosen Core Ontology） v0.2-draft
+# 稜線オントロジー（Ryosen Core Ontology） v0.3-draft
 #
 # 地方中小企業の熟練者が持つ暗黙知を、W3C SOSA/SSN（観測）と
 # PROV-O（由来）の語彙に接続しながら記述するための中核オントロジー。
@@ -25,7 +25,8 @@
     a owl:Ontology ;
     rdfs:label "稜線オントロジー"@ja, "Ryosen Core Ontology"@en ;
     rdfs:comment "地方中小企業の暗黙知を構造化するための中核オントロジー。SOSA/SSN・PROV-Oを再利用する。"@ja ;
-    owl:versionInfo "0.2-draft" .
+    owl:versionInfo "0.3-draft" ;
+    owl:priorVersion <https://ryousen.co.jp/ns/ryosen/0.2-draft> .
 
 #################################################################
 # 暗黙知の3類型（Tacit Knowledge Types）
@@ -110,6 +111,160 @@ ryosen:note
     rdfs:domain ryosen:JudgmentEvent ;
     rdfs:range xsd:string ;
     rdfs:label "メモ"@ja .
+
+#################################################################
+# 読みと照合（v0.3-draft で追加）
+#
+# 判断の前に書いた予測（読み）と、その後の結果との突き合わせ（照合）。
+# 外れた回を後から並べられるよう、読みには確定した時刻を持たせる。
+#################################################################
+
+ryosen:Prediction
+    a owl:Class ;
+    rdfs:subClassOf prov:Entity ;
+    rdfs:label "読み"@ja, "Prediction"@en ;
+    rdfs:comment "判断の前に書いた予測。誰が書いたかは prov:wasAttributedTo で示す。"@ja .
+
+ryosen:predictionFor
+    a owl:ObjectProperty ;
+    rdfs:domain ryosen:Prediction ;
+    rdfs:range ryosen:JudgmentEvent ;
+    rdfs:label "対象の判断イベント"@ja .
+
+ryosen:sealedAt
+    a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:domain ryosen:Prediction ;
+    rdfs:range xsd:dateTime ;
+    rdfs:label "確定時刻"@ja ;
+    rdfs:comment "読みを確定した時刻。結果を記録した時刻より前であることを、照合の前提とする。"@ja .
+
+ryosen:Reconciliation
+    a owl:Class ;
+    rdfs:subClassOf prov:Activity ;
+    rdfs:label "照合"@ja, "Reconciliation"@en ;
+    rdfs:comment "読みと、その後に起きたことの突き合わせ。"@ja .
+
+ryosen:reconciles
+    a owl:ObjectProperty ;
+    rdfs:subPropertyOf prov:used ;
+    rdfs:domain ryosen:Reconciliation ;
+    rdfs:range ryosen:Prediction ;
+    rdfs:label "照合した読み"@ja .
+
+ryosen:ReconciliationOutcome
+    a owl:Class ;
+    rdfs:label "照合の結果"@ja ;
+    owl:oneOf ( ryosen:Matched ryosen:PartiallyMatched ryosen:Missed ) .
+
+ryosen:Matched          a ryosen:ReconciliationOutcome ; rdfs:label "合っていた"@ja .
+ryosen:PartiallyMatched a ryosen:ReconciliationOutcome ; rdfs:label "半分"@ja .
+ryosen:Missed           a ryosen:ReconciliationOutcome ; rdfs:label "違った"@ja .
+
+ryosen:outcome
+    a owl:ObjectProperty , owl:FunctionalProperty ;
+    rdfs:domain ryosen:Reconciliation ;
+    rdfs:range ryosen:ReconciliationOutcome ;
+    rdfs:label "結果"@ja .
+
+#################################################################
+# 同行（v0.3-draft で追加）
+#
+# 一つの訪問・作業に複数人が立ち会い、それぞれが自分の記録を持つ形。
+# 誰がどこまで記録するかは型で縛らず、実行時の設定で決める。
+#################################################################
+
+ryosen:Accompaniment
+    a owl:Class ;
+    rdfs:subClassOf prov:Activity ;
+    rdfs:label "同行"@ja, "Accompaniment"@en ;
+    rdfs:comment "複数人が立ち会った一つの訪問・作業。参加者ごとの記録を子として持つ。"@ja .
+
+ryosen:hasParticipantRecord
+    a owl:ObjectProperty ;
+    rdfs:domain ryosen:Accompaniment ;
+    rdfs:range ryosen:JudgmentEvent ;
+    rdfs:label "参加者ごとの記録"@ja .
+
+#################################################################
+# 場と注釈（v0.3-draft で追加）
+#
+# 記録を前に関係者が座る振り返りの場と、そこで付く注釈。
+# 起きたことを見る立場と、方針を見る立場の注釈は、根拠の種類が違うので
+# 役割で分けて持つ。
+#################################################################
+
+ryosen:ReviewSession
+    a owl:Class ;
+    rdfs:subClassOf prov:Activity ;
+    rdfs:label "場（振り返り）"@ja, "Review Session"@en ;
+    rdfs:comment "熟練者・若手・経営者などが同じ記録を前に座る定期の場。段階（守・破・離）の合意もここで行う。"@ja .
+
+ryosen:Annotation
+    a owl:Class ;
+    rdfs:subClassOf prov:Entity ;
+    rdfs:label "注釈"@ja, "Annotation"@en ;
+    rdfs:comment "場で記録に付けられる判断。結論（印）と、そこに至った発言の両方を持つ。"@ja .
+
+ryosen:annotates
+    a owl:ObjectProperty ;
+    rdfs:domain ryosen:Annotation ;
+    rdfs:label "注釈の対象"@ja .
+
+ryosen:madeIn
+    a owl:ObjectProperty ;
+    rdfs:subPropertyOf prov:wasGeneratedBy ;
+    rdfs:domain ryosen:Annotation ;
+    rdfs:range ryosen:ReviewSession ;
+    rdfs:label "付けられた場"@ja .
+
+ryosen:basisUtterance
+    a owl:DatatypeProperty ;
+    rdfs:domain ryosen:Annotation ;
+    rdfs:range xsd:string ;
+    rdfs:label "判断に至る発言"@ja ;
+    rdfs:comment "注釈の結論に至った発言を、そのままの語彙で。"@ja .
+
+ryosen:AnnotatorRole
+    a owl:Class ;
+    rdfs:label "注釈の立場"@ja ;
+    owl:oneOf ( ryosen:FieldPerspective ryosen:PolicyPerspective ) .
+
+ryosen:FieldPerspective
+    a ryosen:AnnotatorRole ;
+    rdfs:label "起きたことを見る立場"@ja ;
+    rdfs:comment "熟練者・若手など、判断とその帰結を参照する立場。"@ja .
+
+ryosen:PolicyPerspective
+    a ryosen:AnnotatorRole ;
+    rdfs:label "方針を見る立場"@ja ;
+    rdfs:comment "経営者など、会社の方針との整合を参照する立場。注釈は別枠で残す。"@ja .
+
+ryosen:annotatorRole
+    a owl:ObjectProperty , owl:FunctionalProperty ;
+    rdfs:domain ryosen:Annotation ;
+    rdfs:range ryosen:AnnotatorRole ;
+    rdfs:label "注釈の立場"@ja .
+
+#################################################################
+# 参照集合（v0.3-draft で追加・検証中）
+#
+# 熟練者の判断が照らし合わせている知識の集まり（判断の根）。
+# 種類は先に定義しない。振り返りで立ち上がったものを受ける場所として、
+# 空の基底クラスだけを置く。
+#################################################################
+
+ryosen:ReferenceSet
+    a owl:Class ;
+    rdfs:subClassOf prov:Entity ;
+    rdfs:label "参照集合"@ja, "Reference Set"@en ;
+    rdfs:comment "判断の根となる知識の集まり（例：経営方針、業界の季節性）。サブクラスは案件ごとに、記録から立ち上がった時点で定義する。検証中。"@ja .
+
+ryosen:drawsOn
+    a owl:ObjectProperty ;
+    rdfs:domain ryosen:Annotation ;
+    rdfs:range ryosen:ReferenceSet ;
+    rdfs:label "判断の根"@ja ;
+    rdfs:comment "注釈から、その判断が出てきた参照集合へ引く線。"@ja .
 
 #################################################################
 # 拡張ポイント
